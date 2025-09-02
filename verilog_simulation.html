@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html><head>
+<title>Verilog Boolean Function Simulation</title>
+<style>
+    body { font-family: monospace; margin: 20px; }
+    .waveform { background: #f0f0f0; padding: 10px; margin: 10px 0; }
+    .signal { margin: 2px 0; }
+    .high { background: #4CAF50; color: white; display: inline-block; width: 20px; text-align: center; }
+    .low { background: #f44336; color: white; display: inline-block; width: 20px; text-align: center; }
+    table { border-collapse: collapse; margin: 20px 0; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+    th { background: #f2f2f2; }
+</style>
+</head>
+<body>
+<h1>Verilog Boolean Function Simulation</h1>
+<h2>Function: F = (B & D) | (~B & ~D)</h2>
+
+<div class="waveform">
+<h3>Digital Waveforms (16 time units)</h3>
+<div id="waveforms"></div>
+</div>
+
+<h3>Simulation Truth Table</h3>
+<table>
+<tr><th>Time</th><th>A</th><th>B</th><th>C</th><th>D</th><th>F</th><th>Explanation</th></tr>
+<tbody id="simulation-table"></tbody>
+</table>
+
+<script>
+// Wait for DOM to load
+document.addEventListener('DOMContentLoaded', function() {
+    // Generate simulation data
+    const signals = {A: [], B: [], C: [], D: [], F: []};
+    const tableBody = document.getElementById('simulation-table');
+    const waveformDiv = document.getElementById('waveforms');
+
+    // Check if elements exist
+    if (!tableBody || !waveformDiv) {
+        console.error('Required elements not found!');
+        return;
+    }
+
+    // Simulate 16 clock cycles
+    for(let t = 0; t < 16; t++) {
+        const A = (t >> 3) & 1;
+        const B = (t >> 2) & 1; 
+        const C = (t >> 1) & 1;
+        const D = t & 1;
+        const F = ((B && D) || (!B && !D)) ? 1 : 0; // Fixed logical operators
+        
+        signals.A.push(A);
+        signals.B.push(B);
+        signals.C.push(C);
+        signals.D.push(D);
+        signals.F.push(F);
+        
+        // Add to table
+        const row = tableBody.insertRow();
+        row.insertCell().textContent = `${t*10}ns`;
+        row.insertCell().textContent = A;
+        row.insertCell().textContent = B;
+        row.insertCell().textContent = C;
+        row.insertCell().textContent = D;
+        const fCell = row.insertCell();
+        fCell.textContent = F;
+        fCell.style.fontWeight = 'bold';
+        fCell.style.color = F ? 'green' : 'red';
+        
+        let explanation = '';
+        if (F === 1) {
+            if (B === 1 && D === 1) explanation = 'B=1, D=1 → BD=1';
+            else if (B === 0 && D === 0) explanation = 'B=0, D=0 → ~B~D=1';
+        } else {
+            explanation = 'B≠D → F=0';
+        }
+        row.insertCell().textContent = explanation;
+    }
+
+    // Generate waveform display
+    function createWaveform(name, values) {
+        const div = document.createElement('div');
+        div.className = 'signal';
+        div.innerHTML = `<strong>${name}:</strong> `;
+        
+        values.forEach(val => {
+            const span = document.createElement('span');
+            span.className = val ? 'high' : 'low';
+            span.textContent = val;
+            div.appendChild(span);
+        });
+        
+        return div;
+    }
+
+    // Add all waveforms
+    ['A', 'B', 'C', 'D', 'F'].forEach(signal => {
+        waveformDiv.appendChild(createWaveform(signal, signals[signal]));
+    });
+
+    // Add timing info
+    const timing = document.createElement('div');
+    timing.innerHTML = '<br><strong>Timing:</strong> Each block = 10ns, Total simulation = 160ns<br><strong>Status:</strong> ✅ Simulation Complete!';
+    waveformDiv.appendChild(timing);
+
+    console.log('Simulation loaded successfully!');
+});
+</script>
+</body></html>
